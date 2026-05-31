@@ -2,8 +2,8 @@
 {% block content %}
 <h1>Мои записи</h1>
 
-<div class="row mb-3">
-    <div class="col-md-6">
+<div class="row mb-4">
+    <div class="col-md-6 mb-2">
         <form method="get">
             <div class="input-group">
                 <input type="text" name="q" class="form-control" placeholder="Поиск..." value="{{ request.GET.q }}">
@@ -12,7 +12,7 @@
         </form>
     </div>
     <div class="col-md-6">
-        <div class="btn-group">
+        <div class="btn-group flex-wrap">
             <a href="?" class="btn btn-outline-secondary {% if not request.GET.category %}active{% endif %}">Все</a>
             {% for cat in categories %}
                 <a href="?category={{ cat.id }}" class="btn btn-outline-secondary {% if request.GET.category == cat.id|stringformat:'s' %}active{% endif %}">{{ cat.name }}</a>
@@ -23,22 +23,26 @@
 
 {% if entries %}
     {% for entry in entries %}
-        <div class="card mb-3">
+        <div class="card">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <h5 class="card-title">{{ entry.title }}</h5>
-                    <small class="text-muted">{{ entry.entry_date|date:"d.m.Y" }}</small>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0">{{ entry.title }}</h5>
+                    <small class="text-muted ms-3">{{ entry.entry_date|date:"d.m.Y" }}</small>
                 </div>
                 {% if entry.category %}
                     <span class="badge bg-secondary mb-2">{{ entry.category.name }}</span>
                 {% endif %}
-                <p class="card-text">{{ entry.content|truncatewords:30 }}</p>
+                <p class="card-text">{{ entry.content|truncatewords:50 }}</p>
                 <a href="{% url 'entry_detail' entry.pk %}" class="btn btn-sm btn-outline-primary">Читать</a>
             </div>
         </div>
     {% endfor %}
     {% include 'diary/pagination.html' %}
 {% else %}
-    <p>Нет записей. <a href="{% url 'entry_create' %}">Создать</a></p>
+    <div class="card">
+        <div class="card-body">
+            <p>Нет записей. <a href="{% url 'entry_create' %}">Создать первую</a></p>
+        </div>
+    </div>
 {% endif %}
 {% endblock %}
