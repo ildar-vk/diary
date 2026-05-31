@@ -1,7 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Entry
+from .models import Entry, Category
 from .forms import EntryForm
 
 
@@ -14,11 +15,36 @@ class EntryListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = Entry.objects.filter(author=self.request.user)
         query = self.request.GET.get('q')
+        category_name = self.request.GET.get('category')
+
         if query:
             queryset = queryset.filter(
-                title__icontains=query
-            ) | queryset.filter(content__icontains=query)
+                Q(title__icontains=query) | Q(content__icontains=query)
+            )
+
+        if category_name:
+            try:
+                category = Category.objects.get(name=category_name)
+                keywords = [
+                    kw.strip().lower()
+                    for kw in category.keywords.split(',')
+                    if kw.strip()
+                ]
+                if keywords:
+                    regex_pattern = '|'.join(keywords)
+                    queryset = queryset.filter(
+                        Q(title__iregex=regex_pattern) |
+                        Q(content__iregex=regex_pattern)
+                    )
+            except Category.DoesNotExist:
+                pass
+
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+        return context
 
 
 class EntryDetailView(LoginRequiredMixin, DetailView):
@@ -38,7 +64,10 @@ class EntryCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        self.object.auto_assign_category()
+        self.object.save()
+        return response
 
 
 class EntryUpdateView(LoginRequiredMixin, UpdateView):
@@ -49,6 +78,12 @@ class EntryUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_queryset(self):
         return Entry.objects.filter(author=self.request.user)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.auto_assign_category()
+        self.object.save()
+        return response
 
 
 class EntryDeleteView(LoginRequiredMixin, DeleteView):
