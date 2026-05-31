@@ -4,6 +4,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from .models import Entry
 from .forms import EntryForm
 
+
 class EntryListView(LoginRequiredMixin, ListView):
     model = Entry
     template_name = 'diary/entry_list.html'
@@ -14,8 +15,11 @@ class EntryListView(LoginRequiredMixin, ListView):
         queryset = Entry.objects.filter(author=self.request.user)
         query = self.request.GET.get('q')
         if query:
-            queryset = queryset.filter(title__icontains=query) | queryset.filter(content__icontains=query)
+            queryset = queryset.filter(
+                title__icontains=query
+            ) | queryset.filter(content__icontains=query)
         return queryset
+
 
 class EntryDetailView(LoginRequiredMixin, DetailView):
     model = Entry
@@ -24,6 +28,7 @@ class EntryDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return Entry.objects.filter(author=self.request.user)
+
 
 class EntryCreateView(LoginRequiredMixin, CreateView):
     model = Entry
@@ -35,6 +40,7 @@ class EntryCreateView(LoginRequiredMixin, CreateView):
         form.instance.author = self.request.user
         return super().form_valid(form)
 
+
 class EntryUpdateView(LoginRequiredMixin, UpdateView):
     model = Entry
     form_class = EntryForm
@@ -43,6 +49,7 @@ class EntryUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_queryset(self):
         return Entry.objects.filter(author=self.request.user)
+
 
 class EntryDeleteView(LoginRequiredMixin, DeleteView):
     model = Entry
