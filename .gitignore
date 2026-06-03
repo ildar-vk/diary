@@ -8,3 +8,6 @@ db.sqlite3
 /static/
 .idea/
 .env
+db.sqlite3
+.env
+db.sqlite3
