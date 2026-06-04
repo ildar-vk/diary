@@ -1,13 +1,10 @@
 __pycache__/
 *.pyc
+*.pyo
 venv/
 .venv/
-db.sqlite3
 *.log
 /media/
 /static/
 .idea/
 .env
-db.sqlite3
-.env
-db.sqlite3
